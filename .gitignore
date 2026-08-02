@@ -1,0 +1,19 @@
+# Maven
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Node / Frontend
+**/node_modules/
+**/dist/
+**/build/
+.npm
+*.log
+
+# IDE & System
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
