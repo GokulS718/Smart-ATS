@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.ATSEvaluationResponse;
+import com.example.demo.model.Evaluation;
 import com.example.demo.model.Resume;
+import com.example.demo.repository.EvaluationRepository;
 import com.example.demo.repository.ResumeRepository;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
 public class ResumeService {
 
     private final ResumeRepository resumeRepository;
+    private final EvaluationRepository evaluationRepository;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}");
     private static final Pattern PHONE_PATTERN = Pattern.compile("(?:\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}");
@@ -29,8 +32,9 @@ public class ResumeService {
     );
 
     @Autowired
-    public ResumeService(ResumeRepository resumeRepository) {
+    public ResumeService(ResumeRepository resumeRepository, EvaluationRepository evaluationRepository) {
         this.resumeRepository = resumeRepository;
+        this.evaluationRepository = evaluationRepository;
     }
 
     public Resume saveResume(Resume resume) {
@@ -41,14 +45,6 @@ public class ResumeService {
         return resumeRepository.findAll();
     }
 
-    /**
-     * Extracts text from uploaded PDF file using Apache PDFBox, parses basic candidate info,
-     * and saves the Resume entity to MongoDB.
-     *
-     * @param file uploaded MultipartFile PDF
-     * @return saved Resume entity
-     * @throws IOException if PDF reading fails
-     */
     public Resume parseAndSaveResume(MultipartFile file) throws IOException {
         String extractedText;
 
@@ -73,8 +69,8 @@ public class ResumeService {
     }
 
     /**
-     * Evaluates a Resume text against a Job Description (JD) and returns ATS score,
-     * missing keywords, and 1-line feedback strictly formatted as ATSEvaluationResponse.
+     * Evaluates a Resume text against a Job Description, saves the Evaluation document
+     * into MongoDB via EvaluationRepository, and returns ATSEvaluationResponse.
      *
      * @param resumeText text content of the candidate's resume
      * @param jobDescription text content of the target job description
@@ -113,6 +109,10 @@ public class ResumeService {
                     " to better align with this job description.";
         }
 
+        // Save evaluation result directly into MongoDB via EvaluationRepository
+        Evaluation evaluation = new Evaluation(matchPercentage, missing, feedback);
+        evaluationRepository.save(evaluation);
+
         return new ATSEvaluationResponse(matchPercentage, missing, feedback);
     }
 
@@ -123,7 +123,6 @@ public class ResumeService {
                 found.add(skill);
             }
         }
-        // Extract words longer than 3 letters if skill list yielded few results
         if (found.size() < 3) {
             String[] words = jobDescription.split("\\W+");
             for (String word : words) {
