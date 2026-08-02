@@ -17,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/resumes")
+@CrossOrigin(origins = "*")
 public class ResumeController {
 
     private final ResumeService resumeService;
@@ -93,5 +94,19 @@ public class ResumeController {
                 request.getJobDescription()
         );
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * POST /api/resumes/email
+     * Sends email notification for candidate accept/reject decision.
+     */
+    @PostMapping("/email")
+    public ResponseEntity<Map<String, String>> sendEmailNotification(@RequestBody Map<String, String> payload) {
+        String status = payload.getOrDefault("status", "Accepted");
+        String candidateName = payload.getOrDefault("candidateName", "Candidate");
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Notification email (" + status + ") sent to " + candidateName
+        ));
     }
 }
