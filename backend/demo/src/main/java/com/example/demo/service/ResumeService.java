@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ATSEvaluationResponse;
 import com.example.demo.model.Resume;
 import com.example.demo.repository.ResumeRepository;
 import org.apache.pdfbox.Loader;
@@ -10,8 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +24,8 @@ public class ResumeService {
     private static final Pattern PHONE_PATTERN = Pattern.compile("(?:\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}");
     private static final List<String> COMMON_SKILLS = List.of(
             "Java", "Spring Boot", "MongoDB", "SQL", "Python", "JavaScript", "TypeScript",
-            "React", "Node.js", "Docker", "Kubernetes", "AWS", "Git", "REST API", "HTML", "CSS", "Microservices"
+            "React", "Node.js", "Docker", "Kubernetes", "AWS", "Git", "REST API", "HTML", "CSS", "Microservices",
+            "Kafka", "Redis", "CI/CD", "Jenkins", "Agile", "Scrum", "JUnit", "PostgreSQL", "MySQL"
     );
 
     @Autowired
@@ -69,6 +70,69 @@ public class ResumeService {
         resume.setContent(extractedText);
 
         return resumeRepository.save(resume);
+    }
+
+    /**
+     * Evaluates a Resume text against a Job Description (JD) and returns ATS score,
+     * missing keywords, and 1-line feedback strictly formatted as ATSEvaluationResponse.
+     *
+     * @param resumeText text content of the candidate's resume
+     * @param jobDescription text content of the target job description
+     * @return ATSEvaluationResponse with matchPercentage, missingKeywords, and feedback
+     */
+    public ATSEvaluationResponse evaluateResumeAgainstJD(String resumeText, String jobDescription) {
+        if (jobDescription == null || jobDescription.isBlank()) {
+            return new ATSEvaluationResponse(0, List.of(), "Job description cannot be empty for evaluation.");
+        }
+        String lowerResume = (resumeText == null) ? "" : resumeText.toLowerCase();
+
+        Set<String> jdKeywords = extractKeywordsFromJD(jobDescription);
+        if (jdKeywords.isEmpty()) {
+            return new ATSEvaluationResponse(100, List.of(), "Job description contains no specific technical keywords to evaluate.");
+        }
+
+        List<String> matched = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+
+        for (String keyword : jdKeywords) {
+            if (lowerResume.contains(keyword.toLowerCase())) {
+                matched.add(keyword);
+            } else {
+                missing.add(keyword);
+            }
+        }
+
+        int matchPercentage = (int) Math.round(((double) matched.size() / jdKeywords.size()) * 100);
+
+        String feedback;
+        if (missing.isEmpty()) {
+            feedback = "Excellent match! Your resume incorporates all core technical skills required in the job description.";
+        } else {
+            feedback = "Consider adding experience or projects highlighting " +
+                    String.join(", ", missing.subList(0, Math.min(3, missing.size()))) +
+                    " to better align with this job description.";
+        }
+
+        return new ATSEvaluationResponse(matchPercentage, missing, feedback);
+    }
+
+    private Set<String> extractKeywordsFromJD(String jobDescription) {
+        Set<String> found = new LinkedHashSet<>();
+        for (String skill : COMMON_SKILLS) {
+            if (jobDescription.toLowerCase().contains(skill.toLowerCase())) {
+                found.add(skill);
+            }
+        }
+        // Extract words longer than 3 letters if skill list yielded few results
+        if (found.size() < 3) {
+            String[] words = jobDescription.split("\\W+");
+            for (String word : words) {
+                if (word.length() > 4 && Character.isUpperCase(word.charAt(0))) {
+                    found.add(word);
+                }
+            }
+        }
+        return found;
     }
 
     private String extractCandidateName(String text, String originalFilename) {

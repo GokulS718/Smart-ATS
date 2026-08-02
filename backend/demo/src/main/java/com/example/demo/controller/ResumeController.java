@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ATSEvaluationResponse;
+import com.example.demo.dto.EvaluateRequest;
 import com.example.demo.model.Resume;
 import com.example.demo.service.ResumeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +40,10 @@ public class ResumeController {
 
     /**
      * POST /api/resumes/upload
-     * Uploads a PDF resume, parses candidate details using PDFBox, and saves it to MongoDB.
+     * Accepts a PDF file, parses candidate details using PDFBox, and saves it to MongoDB.
      *
      * @param file MultipartFile containing PDF resume
-     * @return ResponseEntity with saved Resume or error payload
+     * @return ResponseEntity with saved Resume or error status
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAndParseResume(@RequestParam("file") MultipartFile file) {
@@ -54,7 +56,10 @@ public class ResumeController {
         String contentType = file.getContentType();
 
         boolean isPdfExtension = originalFilename != null && originalFilename.toLowerCase().endsWith(".pdf");
-        boolean isPdfContentType = contentType != null && (contentType.equalsIgnoreCase("application/pdf") || contentType.equalsIgnoreCase("application/octet-stream"));
+        boolean isPdfContentType = contentType != null && (
+                contentType.equalsIgnoreCase("application/pdf") || 
+                contentType.equalsIgnoreCase("application/octet-stream")
+        );
 
         if (!isPdfExtension && !isPdfContentType) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -71,5 +76,22 @@ public class ResumeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An unexpected error occurred while processing the resume: " + e.getMessage()));
         }
+    }
+
+    /**
+     * POST /api/resumes/evaluate
+     * Evaluates a resume text against a Job Description and returns ATS score,
+     * missing keywords, and feedback in strict JSON format.
+     *
+     * @param request EvaluateRequest containing resumeText and jobDescription
+     * @return ResponseEntity with ATSEvaluationResponse
+     */
+    @PostMapping("/evaluate")
+    public ResponseEntity<ATSEvaluationResponse> evaluateResume(@RequestBody EvaluateRequest request) {
+        ATSEvaluationResponse response = resumeService.evaluateResumeAgainstJD(
+                request.getResumeText(),
+                request.getJobDescription()
+        );
+        return ResponseEntity.ok(response);
     }
 }
