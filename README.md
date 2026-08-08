@@ -45,7 +45,7 @@
 - **Automated SMTP Email Alerts**: Send personalized acceptance, rejection, or update emails to candidates via Spring Mail.
 
 ### 5. 📊 Real-Time Analytics Dashboard
-- Interactive visualizations powered by **Recharts**:
+- Interactive visualizations powered by **Recharts**: 
   - Skill Frequency Distribution Bar Chart
   - Applicant Status Breakdown Donut Chart
   - Average ATS Benchmark KPIs & Acceptance Rate Leaderboards
