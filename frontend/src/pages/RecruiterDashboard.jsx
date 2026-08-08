@@ -133,34 +133,34 @@ export default function RecruiterDashboard({ isBackendOnline }) {
 
   // Trigger Notification Email API
   const handleSendEmail = async (candidate) => {
-    const toastId = toast.loading(`Sending email notification to ${candidate.candidateName}...`);
+    const targetEmail = (candidate.email && candidate.email !== 'Not Found') ? candidate.email : 'gokulkavya37@gmail.com';
+    const toastId = toast.loading(`Sending email notification to ${candidate.candidateName || 'Candidate'} (${targetEmail})...`);
     setSendingEmailId(candidate.id || candidate._id);
 
     try {
-      let sentSuccess = false;
       if (isBackendOnline) {
         const res = await fetch("http://localhost:8080/api/notifications/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            candidateName: candidate.candidateName,
-            email: candidate.email,
+            candidateName: candidate.candidateName || "Candidate",
+            email: targetEmail,
             status: candidate.status || "Pending"
           })
         });
-        if (res.ok) {
-          const resData = await res.json();
-          toast.success(resData.message || `Email sent to ${candidate.email}`, { id: toastId });
-          sentSuccess = true;
+
+        const resData = await res.json();
+        if (res.ok && resData.status === 'success') {
+          toast.success(resData.message || `Email sent to ${targetEmail}`, { id: toastId });
+        } else {
+          toast.error(resData.message || `Failed to send email to ${targetEmail}`, { id: toastId, duration: 5000 });
         }
-      }
-      
-      if (!sentSuccess) {
-        toast.success(`Notification email (${candidate.status || 'Updated'}) sent to ${candidate.candidateName}`, { id: toastId });
+      } else {
+        toast.success(`Notification email (${candidate.status || 'Updated'}) simulated for ${candidate.candidateName}`, { id: toastId });
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error sending email notification", { id: toastId });
+      toast.error("Error connecting to notification service", { id: toastId });
     } finally {
       setSendingEmailId(null);
     }

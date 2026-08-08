@@ -12,8 +12,8 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     public boolean sendStatusEmail(String toEmail, String candidateName, String status) {
-        if (toEmail == null || toEmail.trim().isEmpty()) {
-            System.err.println("Email recipient address is missing or empty.");
+        if (toEmail == null || toEmail.trim().isEmpty() || "Not Found".equalsIgnoreCase(toEmail.trim())) {
+            System.err.println("Email recipient address is invalid: " + toEmail);
             return false;
         }
 
@@ -58,6 +58,7 @@ public class EmailService {
             }
         } catch (Exception e) {
             System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
