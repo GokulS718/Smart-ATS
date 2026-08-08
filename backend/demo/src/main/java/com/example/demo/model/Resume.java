@@ -16,10 +16,16 @@ public class Resume {
     private String skills;
     private String experience;
     private String content;
+    private String status = "Pending";
+    private int atsScore = 0;
+    private java.util.List<String> matchedSkills = new java.util.ArrayList<>();
+    private java.util.List<String> missingSkills = new java.util.ArrayList<>();
+    private String feedback;
     private LocalDateTime uploadedAt;
 
     public Resume() {
         this.uploadedAt = LocalDateTime.now();
+        this.status = "Pending";
     }
 
     public Resume(String id, String candidateName, String email, String phone, String skills, String experience, String content) {
@@ -31,6 +37,7 @@ public class Resume {
         this.experience = experience;
         this.content = content;
         this.uploadedAt = LocalDateTime.now();
+        this.status = "Pending";
     }
 
     public String getId() {
@@ -87,6 +94,46 @@ public class Resume {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getAtsScore() {
+        return atsScore;
+    }
+
+    public void setAtsScore(int atsScore) {
+        this.atsScore = atsScore;
+    }
+
+    public java.util.List<String> getMatchedSkills() {
+        return matchedSkills;
+    }
+
+    public void setMatchedSkills(java.util.List<String> matchedSkills) {
+        this.matchedSkills = matchedSkills;
+    }
+
+    public java.util.List<String> getMissingSkills() {
+        return missingSkills;
+    }
+
+    public void setMissingSkills(java.util.List<String> missingSkills) {
+        this.missingSkills = missingSkills;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 
     public LocalDateTime getUploadedAt() {

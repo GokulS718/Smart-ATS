@@ -45,6 +45,20 @@ public class ResumeService {
         return resumeRepository.findAll();
     }
 
+    public Optional<Resume> getResumeById(String id) {
+        return resumeRepository.findById(id);
+    }
+
+    public Resume updateResumeStatus(String id, String status) {
+        Optional<Resume> optional = resumeRepository.findById(id);
+        if (optional.isPresent()) {
+            Resume r = optional.get();
+            r.setStatus(status);
+            return resumeRepository.save(r);
+        }
+        return null;
+    }
+
     public Resume parseAndSaveResume(MultipartFile file) throws IOException {
         String extractedText;
 
@@ -57,6 +71,7 @@ public class ResumeService {
         String email = extractEmail(extractedText);
         String phone = extractPhone(extractedText);
         String skills = extractSkills(extractedText);
+        List<String> matchedSkillList = extractSkillList(extractedText);
 
         Resume resume = new Resume();
         resume.setCandidateName(candidateName);
@@ -64,6 +79,11 @@ public class ResumeService {
         resume.setPhone(phone);
         resume.setSkills(skills);
         resume.setContent(extractedText);
+        resume.setStatus("Pending");
+        resume.setMatchedSkills(matchedSkillList);
+        // Default initial score based on matched skills count
+        int initialScore = Math.min(95, Math.max(45, matchedSkillList.size() * 18));
+        resume.setAtsScore(initialScore);
 
         return resumeRepository.save(resume);
     }
@@ -169,13 +189,18 @@ public class ResumeService {
     }
 
     private String extractSkills(String text) {
-        if (text == null) return "Not Specified";
+        List<String> foundSkills = extractSkillList(text);
+        return foundSkills.isEmpty() ? "Not Specified" : String.join(", ", foundSkills);
+    }
+
+    private List<String> extractSkillList(String text) {
+        if (text == null) return Collections.emptyList();
         List<String> foundSkills = new ArrayList<>();
         for (String skill : COMMON_SKILLS) {
             if (text.toLowerCase().contains(skill.toLowerCase())) {
                 foundSkills.add(skill);
             }
         }
-        return foundSkills.isEmpty() ? "Not Specified" : String.join(", ", foundSkills);
+        return foundSkills;
     }
 }

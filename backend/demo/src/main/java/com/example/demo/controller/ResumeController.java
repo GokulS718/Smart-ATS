@@ -39,12 +39,28 @@ public class ResumeController {
         return ResponseEntity.ok(resumes);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Resume>> getAllResumesEndpoint() {
+        List<Resume> resumes = resumeService.getAllResumes();
+        return ResponseEntity.ok(resumes);
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable("id") String id, @RequestBody Map<String, String> body) {
+        String newStatus = body.get("status");
+        if (newStatus == null || newStatus.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Status field is required"));
+        }
+        Resume updated = resumeService.updateResumeStatus(id, newStatus);
+        if (updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Resume not found with id: " + id));
+        }
+        return ResponseEntity.ok(updated);
+    }
+
     /**
      * POST /api/resumes/upload
      * Accepts a PDF file, parses candidate details using PDFBox, and saves it to MongoDB.
-     *
-     * @param file MultipartFile containing PDF resume
-     * @return ResponseEntity with saved Resume or error status
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAndParseResume(@RequestParam("file") MultipartFile file) {
@@ -81,11 +97,6 @@ public class ResumeController {
 
     /**
      * POST /api/resumes/evaluate
-     * Evaluates a resume text against a Job Description and returns ATS score,
-     * missing keywords, and feedback in strict JSON format.
-     *
-     * @param request EvaluateRequest containing resumeText and jobDescription
-     * @return ResponseEntity with ATSEvaluationResponse
      */
     @PostMapping("/evaluate")
     public ResponseEntity<ATSEvaluationResponse> evaluateResume(@RequestBody EvaluateRequest request) {
@@ -98,15 +109,15 @@ public class ResumeController {
 
     /**
      * POST /api/resumes/email
-     * Sends email notification for candidate accept/reject decision.
      */
     @PostMapping("/email")
     public ResponseEntity<Map<String, String>> sendEmailNotification(@RequestBody Map<String, String> payload) {
         String status = payload.getOrDefault("status", "Accepted");
         String candidateName = payload.getOrDefault("candidateName", "Candidate");
+        String email = payload.getOrDefault("email", "candidate@example.com");
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Notification email (" + status + ") sent to " + candidateName
+                "message", "Notification email (" + status + ") sent to " + candidateName + " (" + email + ")"
         ));
     }
 }
