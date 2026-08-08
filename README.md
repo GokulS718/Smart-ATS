@@ -35,7 +35,7 @@
   - **Full Stack Web Development (FSWD)**: React, Node.js, Spring Boot, MongoDB, REST APIs
   - **Artificial Intelligence (AI)**: LLMs, Gemini/OpenAI API, Prompt Engineering, Python, Vector DB
   - **Machine Learning (AI/ML)**: Scikit-Learn, PyTorch, TensorFlow, FastAPI, Model Deployment
-  - **Data Science (DS)**: Python, Pandas, NumPy, Data Modeling, Predictive Analytics
+  - **Data Science (DS)**: Python, Pandas, NumPy, Data Modeling, Predictive Analytics 
   - **Data Analytics**: SQL, Power BI, Excel, Data Visualization, Python
 
 ### 4. 👥 HR Recruiter Hub
