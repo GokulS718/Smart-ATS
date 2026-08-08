@@ -27,7 +27,7 @@
 
 ### 2. 📁 Multi-PDF Batch Upload (Up to 7 Resumes)
 - Upload and analyze **up to 7 PDF resumes simultaneously** via drag-and-drop or multi-file picker. 
-- Live progress indicators with an automated **Batch Evaluation Leaderboard** ranking candidates by match percentage.
+- Live progress indicators with an automated **Batch Evaluation Leaderboard** ranking candidates by match percentage. 
 
 ### 3. 🎯 Job Description Preset Combobox
 - Pre-configured, high-demand industry job presets for instant evaluation:
