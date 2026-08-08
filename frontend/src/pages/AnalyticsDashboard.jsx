@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer, 
-  Cell, 
-  PieChart, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
   Pie,
   CartesianGrid,
   Legend
 } from 'recharts';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Award, 
-  Users, 
-  CheckCircle, 
-  Zap, 
+import {
+  BarChart3,
+  TrendingUp,
+  Award,
+  Users,
+  CheckCircle,
+  Zap,
   Target,
   Sparkles
 } from 'lucide-react';
@@ -64,7 +64,7 @@ export default function AnalyticsDashboard({ isBackendOnline }) {
 
   // Metric 1: Average ATS Score
   const totalCount = candidates.length;
-  const avgScore = totalCount > 0 
+  const avgScore = totalCount > 0
     ? Math.round(candidates.reduce((acc, c) => acc + (c.atsScore || c.score || 70), 0) / totalCount)
     : 85;
 
@@ -138,7 +138,7 @@ export default function AnalyticsDashboard({ isBackendOnline }) {
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
+
         {/* KPI 1: Average Score */}
         <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-lg space-y-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -201,7 +201,7 @@ export default function AnalyticsDashboard({ isBackendOnline }) {
 
       {/* 2-Column Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
+
         {/* Chart 1: Skill Frequency Distribution Bar Chart */}
         <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -295,12 +295,11 @@ export default function AnalyticsDashboard({ isBackendOnline }) {
                 className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between hover:border-slate-700 transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center text-xs ${
-                    rank === 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
-                    rank === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-400/40' :
-                    rank === 2 ? 'bg-amber-700/20 text-amber-500 border border-amber-700/40' :
-                    'bg-slate-800 text-slate-400'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center text-xs ${rank === 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+                      rank === 1 ? 'bg-slate-300/20 text-slate-200 border border-slate-400/40' :
+                        rank === 2 ? 'bg-amber-700/20 text-amber-500 border border-amber-700/40' :
+                          'bg-slate-800 text-slate-400'
+                    }`}>
                     #{rank + 1}
                   </div>
                   <div>
