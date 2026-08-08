@@ -4,7 +4,7 @@
 
 ![Smart ATS Banner](https://img.shields.io/badge/Smart--ATS-v2.0-blue?style=for-the-badge&logo=rocket)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-brightgreen?style=for-the-badge&logo=springboot)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-brightgreen?style=for-the-badge&logo=springboot) 
 ![React](https://img.shields.io/badge/React-18-cyan?style=for-the-badge&logo=react)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge&logo=mongodb)
 ![Gemini AI](https://img.shields.io/badge/Google_Gemini-1.5_Flash-purple?style=for-the-badge&logo=google) 
