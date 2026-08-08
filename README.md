@@ -26,7 +26,7 @@
 - **Synchronized Scoring**: Ensures the exact ATS match score generated in Candidate Analysis is persisted to MongoDB and displayed identically in the HR Recruiter Hub.
 
 ### 2. 📁 Multi-PDF Batch Upload (Up to 7 Resumes)
-- Upload and analyze **up to 7 PDF resumes simultaneously** via drag-and-drop or multi-file picker.
+- Upload and analyze **up to 7 PDF resumes simultaneously** via drag-and-drop or multi-file picker. 
 - Live progress indicators with an automated **Batch Evaluation Leaderboard** ranking candidates by match percentage.
 
 ### 3. 🎯 Job Description Preset Combobox
