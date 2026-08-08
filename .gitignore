@@ -1,3 +1,9 @@
+# Environment and Credentials
+.env
+.env.local
+*.env
+application-local.properties
+
 # Maven
 **/target/
 !.mvn/wrapper/maven-wrapper.jar
