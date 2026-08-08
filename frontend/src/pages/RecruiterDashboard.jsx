@@ -12,10 +12,11 @@ import {
   Award,
   ChevronDown,
   UserCheck,
-  Send
+  Send,
+  Trash2
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://smart-ats-backend.onrender.com";
 
 const FALLBACK_CANDIDATES = [
   {
@@ -156,29 +157,57 @@ export default function RecruiterDashboard({ isBackendOnline }) {
           toast.success(resData.message || `Email sent to ${targetEmail}`, { id: toastId });
         } else {
           toast.error(resData.message || `Failed to send email to ${targetEmail}`, { id: toastId, duration: 5000 });
+      }
+    } else {
+      toast.success(`Notification email (${candidate.status || 'Updated'}) simulated for ${candidate.candidateName}`, { id: toastId });
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Error connecting to notification service", { id: toastId });
+  } finally {
+    setSendingEmailId(null);
+  }
+};
+
+// Delete Candidate API
+const handleDeleteCandidate = async (candidateId) => {
+    const toastId = toast.loading("Deleting candidate resume...");
+    try {
+      if (isBackendOnline) {
+        const res = await fetch(`${API_BASE_URL}/api/resumes/${candidateId}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          toast.success("Candidate deleted successfully", { id: toastId });
+        } else {
+          toast.success("Candidate removed from list", { id: toastId });
         }
       } else {
-        toast.success(`Notification email (${candidate.status || 'Updated'}) simulated for ${candidate.candidateName}`, { id: toastId });
+        toast.success("Candidate deleted successfully (Local State)", { id: toastId });
       }
+
+      setCandidates(prev => prev.filter(c => (c.id !== candidateId && c._id !== candidateId)));
     } catch (error) {
       console.error(error);
-      toast.error("Error connecting to notification service", { id: toastId });
-    } finally {
-      setSendingEmailId(null);
+      toast.error("Failed to delete candidate", { id: toastId });
     }
   };
 
-  // Filter logic
-  const filteredCandidates = candidates.filter(c => {
-    const matchesSearch = 
-      (c.candidateName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (c.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (c.skills || '').toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter logic with robust parseFloat & string stripping for atsScore
+  const filteredCandidates = candidates.filter(candidate => {
+    const score = parseFloat(String(candidate.atsScore || candidate.score || 0).replace(/[^0-9.]/g, '')) || 0;
+    const minThreshold = parseFloat(minScore) || 0;
+    const matchesScore = score >= minThreshold;
 
-    const matchesScore = (c.atsScore || 0) >= minScore;
-    const matchesStatus = statusFilter === 'ALL' || (c.status || 'Pending').toUpperCase() === statusFilter.toUpperCase();
+    const searchLower = (searchTerm || '').toLowerCase();
+    const matchesSearch = !searchTerm || 
+      candidate.candidateName?.toLowerCase().includes(searchLower) ||
+      candidate.email?.toLowerCase().includes(searchLower) ||
+      candidate.skills?.toLowerCase().includes(searchLower);
 
-    return matchesSearch && matchesScore && matchesStatus;
+    const matchesStatus = statusFilter === 'ALL' || (candidate.status || 'Pending').toUpperCase() === statusFilter.toUpperCase();
+
+    return matchesScore && matchesSearch && matchesStatus;
   });
 
   const getStatusBadge = (status) => {
@@ -398,6 +427,15 @@ export default function RecruiterDashboard({ isBackendOnline }) {
                           >
                             <Send className={`w-3.5 h-3.5 ${sendingEmailId === candidateId ? 'animate-pulse' : ''}`} />
                             <span>Notify Email</span>
+                          </button>
+
+                          {/* Delete Candidate Button */}
+                          <button
+                            onClick={() => handleDeleteCandidate(candidateId)}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors ml-1"
+                            title="Delete Candidate Record"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
 
                         </div>

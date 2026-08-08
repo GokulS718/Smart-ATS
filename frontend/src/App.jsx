@@ -7,7 +7,7 @@ import CandidateDashboard from './pages/CandidateDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://smart-ats-backend.onrender.com";
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);

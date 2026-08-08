@@ -46,12 +46,16 @@ public class ResumeController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable("id") String id, @RequestBody Map<String, String> body) {
-        String newStatus = body.get("status");
-        if (newStatus == null || newStatus.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Status field is required"));
+    public ResponseEntity<?> updateStatus(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
+        String newStatus = body.get("status") != null ? body.get("status").toString() : null;
+        Integer atsScore = null;
+        if (body.get("atsScore") != null) {
+            try {
+                atsScore = Integer.parseInt(body.get("atsScore").toString());
+            } catch (NumberFormatException ignored) {}
         }
-        Resume updated = resumeService.updateResumeStatus(id, newStatus);
+
+        Resume updated = resumeService.updateResumeScoreAndStatus(id, newStatus, atsScore);
         if (updated == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Resume not found with id: " + id));
         }
@@ -59,11 +63,27 @@ public class ResumeController {
     }
 
     /**
+     * DELETE /api/resumes/{id}
+     * Deletes a candidate resume from MongoDB by ID.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteResume(@PathVariable("id") String id) {
+        boolean deleted = resumeService.deleteResume(id);
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Resume deleted successfully", "id", id));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Resume not found with id: " + id));
+    }
+
+    /**
      * POST /api/resumes/upload
-     * Accepts a PDF file, parses candidate details using PDFBox, and saves it to MongoDB.
+     * Accepts a PDF file and optional atsScore, parses candidate details using PDFBox, and saves it to MongoDB.
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadAndParseResume(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadAndParseResume(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "atsScore", required = false) Integer atsScore
+    ) {
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Failed to process empty file."));
@@ -84,7 +104,7 @@ public class ResumeController {
         }
 
         try {
-            Resume savedResume = resumeService.parseAndSaveResume(file);
+            Resume savedResume = resumeService.parseAndSaveResume(file, atsScore);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedResume);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

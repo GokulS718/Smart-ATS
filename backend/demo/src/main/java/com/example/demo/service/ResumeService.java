@@ -5,6 +5,7 @@ import com.example.demo.model.Evaluation;
 import com.example.demo.model.Resume;
 import com.example.demo.repository.EvaluationRepository;
 import com.example.demo.repository.ResumeRepository;
+import com.example.demo.util.ContactExtractor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,17 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final EvaluationRepository evaluationRepository;
+    private final GeminiService geminiService;
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("(?:\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}");
     private static final List<String> COMMON_SKILLS = List.of(
             "Java", "Spring Boot", "MongoDB", "SQL", "Python", "JavaScript", "TypeScript",
             "React", "Node.js", "Docker", "Kubernetes", "AWS", "Git", "REST API", "HTML", "CSS", "Microservices",
@@ -32,9 +30,12 @@ public class ResumeService {
     );
 
     @Autowired
-    public ResumeService(ResumeRepository resumeRepository, EvaluationRepository evaluationRepository) {
+    public ResumeService(ResumeRepository resumeRepository, 
+                         EvaluationRepository evaluationRepository, 
+                         GeminiService geminiService) {
         this.resumeRepository = resumeRepository;
         this.evaluationRepository = evaluationRepository;
+        this.geminiService = geminiService;
     }
 
     public Resume saveResume(Resume resume) {
@@ -59,7 +60,43 @@ public class ResumeService {
         return null;
     }
 
+    public Resume updateResumeScoreAndStatus(String id, String status, Integer atsScore) {
+        Optional<Resume> optional = resumeRepository.findById(id);
+        if (optional.isPresent()) {
+            Resume r = optional.get();
+            if (status != null && !status.isBlank()) {
+                r.setStatus(status);
+            }
+            if (atsScore != null && atsScore > 0) {
+                r.setAtsScore(atsScore);
+            }
+            return resumeRepository.save(r);
+        }
+        return null;
+    }
+
+    /**
+     * Deletes a candidate resume by MongoDB ID.
+     */
+    public boolean deleteResume(String id) {
+        if (resumeRepository.existsById(id)) {
+            resumeRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
     public Resume parseAndSaveResume(MultipartFile file) throws IOException {
+        return parseAndSaveResume(file, null);
+    }
+
+    /**
+     * Parses PDF resume using a robust two-step pipeline:
+     * Step 1: Fast & accurate Regex extraction via ContactExtractor with Unicode sanitization and LinkedIn splitting.
+     * Step 2: Fallback to Gemini AI if email or phone is missing or "Not Found".
+     * Persists exact synchronized atsScore.
+     */
+    public Resume parseAndSaveResume(MultipartFile file, Integer clientAtsScore) throws IOException {
         String extractedText;
 
         try (PDDocument document = Loader.loadPDF(file.getBytes())) {
@@ -67,11 +104,62 @@ public class ResumeService {
             extractedText = pdfStripper.getText(document);
         }
 
-        String candidateName = extractCandidateName(extractedText, file.getOriginalFilename());
-        String email = extractEmail(extractedText);
-        String phone = extractPhone(extractedText);
+        // Step 1: Extract directly via ContactExtractor (Regex, Unicode Cleaning, Indian Phone Normalization)
+        String candidateName = ContactExtractor.extractCandidateName(extractedText, file.getOriginalFilename());
+        String email = ContactExtractor.extractEmail(extractedText);
+        String phone = ContactExtractor.extractPhone(extractedText);
         String skills = extractSkills(extractedText);
         List<String> matchedSkillList = extractSkillList(extractedText);
+
+        // Step 2: If email or phone returns "Not Found", fall back to Gemini AI parser
+        if ("Not Found".equalsIgnoreCase(email) || "Not Found".equalsIgnoreCase(phone) || email == null || phone == null) {
+            try {
+                Map<String, Object> geminiResult = geminiService.parseResumeWithGemini(extractedText);
+                if (geminiResult != null && !geminiResult.isEmpty()) {
+                    if (("Not Found".equalsIgnoreCase(email) || email == null) && geminiResult.get("email") != null) {
+                        String geminiEmail = geminiResult.get("email").toString().trim();
+                        String cleanedEmail = ContactExtractor.extractEmail(geminiEmail);
+                        if (!cleanedEmail.equalsIgnoreCase("Not Found")) {
+                            email = cleanedEmail;
+                        } else if (!geminiEmail.isEmpty() && !geminiEmail.equalsIgnoreCase("Not Found") && !geminiEmail.equalsIgnoreCase("null")) {
+                            email = geminiEmail;
+                        }
+                    }
+
+                    if (("Not Found".equalsIgnoreCase(phone) || phone == null) && geminiResult.get("phone") != null) {
+                        String geminiPhone = geminiResult.get("phone").toString().trim();
+                        String cleanedPhone = ContactExtractor.extractPhone(geminiPhone);
+                        if (!cleanedPhone.equalsIgnoreCase("Not Found")) {
+                            phone = cleanedPhone;
+                        } else if (!geminiPhone.isEmpty() && !geminiPhone.equalsIgnoreCase("Not Found") && !geminiPhone.equalsIgnoreCase("null")) {
+                            phone = geminiPhone;
+                        }
+                    }
+
+                    if (("Candidate".equalsIgnoreCase(candidateName) || "Unknown Candidate".equalsIgnoreCase(candidateName)) 
+                            && geminiResult.get("candidateName") != null) {
+                        String geminiName = geminiResult.get("candidateName").toString().trim();
+                        if (!geminiName.isEmpty()) {
+                            candidateName = geminiName;
+                        }
+                    }
+
+                    if (("Not Specified".equalsIgnoreCase(skills) || skills.isEmpty()) && geminiResult.get("skills") != null) {
+                        skills = geminiResult.get("skills").toString();
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Gemini AI fallback parsing failed: " + ex.getMessage());
+            }
+        }
+
+        // Final sanitation check & fallback
+        if (email == null || email.isBlank() || "Not Found".equalsIgnoreCase(email)) {
+            email = ContactExtractor.extractEmail(extractedText);
+        }
+        if (phone == null || phone.isBlank() || "Not Found".equalsIgnoreCase(phone)) {
+            phone = ContactExtractor.extractPhone(extractedText);
+        }
 
         Resume resume = new Resume();
         resume.setCandidateName(candidateName);
@@ -81,9 +169,14 @@ public class ResumeService {
         resume.setContent(extractedText);
         resume.setStatus("Pending");
         resume.setMatchedSkills(matchedSkillList);
-        // Default initial score based on matched skills count
-        int initialScore = Math.min(95, Math.max(45, matchedSkillList.size() * 18));
-        resume.setAtsScore(initialScore);
+
+        // Synchronize ATS score: Use client score if provided, else compute based on matched skills
+        if (clientAtsScore != null && clientAtsScore > 0) {
+            resume.setAtsScore(clientAtsScore);
+        } else {
+            int computedScore = Math.min(95, Math.max(45, matchedSkillList.size() * 18));
+            resume.setAtsScore(computedScore);
+        }
 
         return resumeRepository.save(resume);
     }
@@ -91,10 +184,6 @@ public class ResumeService {
     /**
      * Evaluates a Resume text against a Job Description, saves the Evaluation document
      * into MongoDB via EvaluationRepository, and returns ATSEvaluationResponse.
-     *
-     * @param resumeText text content of the candidate's resume
-     * @param jobDescription text content of the target job description
-     * @return ATSEvaluationResponse with matchPercentage, missingKeywords, and feedback
      */
     public ATSEvaluationResponse evaluateResumeAgainstJD(String resumeText, String jobDescription) {
         if (jobDescription == null || jobDescription.isBlank()) {
@@ -129,7 +218,6 @@ public class ResumeService {
                     " to better align with this job description.";
         }
 
-        // Save evaluation result directly into MongoDB via EvaluationRepository
         Evaluation evaluation = new Evaluation(matchPercentage, missing, feedback);
         evaluationRepository.save(evaluation);
 
@@ -152,40 +240,6 @@ public class ResumeService {
             }
         }
         return found;
-    }
-
-    private String extractCandidateName(String text, String originalFilename) {
-        if (text != null && !text.isBlank()) {
-            String[] lines = text.split("\\r?\\n");
-            for (String line : lines) {
-                String trimmed = line.trim();
-                if (!trimmed.isEmpty() && trimmed.length() < 50 && !trimmed.contains("@")) {
-                    return trimmed;
-                }
-            }
-        }
-        if (originalFilename != null && originalFilename.contains(".")) {
-            return originalFilename.substring(0, originalFilename.lastIndexOf('.'));
-        }
-        return "Unknown Candidate";
-    }
-
-    private String extractEmail(String text) {
-        if (text == null) return "Not Found";
-        Matcher matcher = EMAIL_PATTERN.matcher(text);
-        if (matcher.find()) {
-            return matcher.group();
-        }
-        return "Not Found";
-    }
-
-    private String extractPhone(String text) {
-        if (text == null) return "Not Found";
-        Matcher matcher = PHONE_PATTERN.matcher(text);
-        if (matcher.find()) {
-            return matcher.group();
-        }
-        return "Not Found";
     }
 
     private String extractSkills(String text) {
