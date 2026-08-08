@@ -23,6 +23,8 @@ import {
   Sparkles
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const MOCK_ANALYTICS_CANDIDATES = [
   { candidateName: "Priya Sharma", email: "priya@example.com", score: 95, skills: ["Java", "Spring Boot", "React", "MongoDB", "Kafka"], status: "Accepted" },
   { candidateName: "Sarah Jenkins", email: "sarah@example.com", score: 92, skills: ["Java", "Spring Boot", "React", "MongoDB", "Docker"], status: "Accepted" },
@@ -41,7 +43,7 @@ export default function AnalyticsDashboard({ isBackendOnline }) {
       setLoading(true);
       if (isBackendOnline) {
         try {
-          const res = await fetch("http://localhost:8080/api/resumes/all");
+          const res = await fetch(`${API_BASE_URL}/api/resumes/all`);
           if (res.ok) {
             const data = await res.json();
             if (data && data.length > 0) {

@@ -14,6 +14,8 @@ import {
   FileCheck
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function CandidateDashboard({ isBackendOnline }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
@@ -79,7 +81,7 @@ export default function CandidateDashboard({ isBackendOnline }) {
         formData.append("file", selectedFile);
         
         try {
-          const res = await fetch("http://localhost:8080/api/resumes/upload", {
+          const res = await fetch(`${API_BASE_URL}/api/resumes/upload`, {
             method: "POST",
             body: formData,
           });
@@ -110,7 +112,7 @@ export default function CandidateDashboard({ isBackendOnline }) {
       // 2. Perform JD match analysis via /api/resumes/evaluate if online
       if (isBackendOnline && jobDescription.trim()) {
         try {
-          const evalRes = await fetch("http://localhost:8080/api/resumes/evaluate", {
+          const evalRes = await fetch(`${API_BASE_URL}/api/resumes/evaluate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

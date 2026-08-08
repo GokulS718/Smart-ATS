@@ -15,6 +15,8 @@ import {
   Send
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const FALLBACK_CANDIDATES = [
   {
     id: "64e0a1f29b1d2e3f4a5b6c01",
@@ -81,7 +83,7 @@ export default function RecruiterDashboard({ isBackendOnline }) {
     setLoading(true);
     try {
       if (isBackendOnline) {
-        const res = await fetch("http://localhost:8080/api/resumes/all");
+        const res = await fetch(`${API_BASE_URL}/api/resumes/all`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
@@ -110,7 +112,7 @@ export default function RecruiterDashboard({ isBackendOnline }) {
     
     try {
       if (isBackendOnline) {
-        const res = await fetch(`http://localhost:8080/api/resumes/${candidateId}/status`, {
+        const res = await fetch(`${API_BASE_URL}/api/resumes/${candidateId}/status`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus })
@@ -139,7 +141,7 @@ export default function RecruiterDashboard({ isBackendOnline }) {
 
     try {
       if (isBackendOnline) {
-        const res = await fetch("http://localhost:8080/api/notifications/send-email", {
+        const res = await fetch(`${API_BASE_URL}/api/notifications/send-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
