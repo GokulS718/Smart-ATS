@@ -9,8 +9,8 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge&logo=mongodb)
 ![Gemini AI](https://img.shields.io/badge/Google_Gemini-1.5_Flash-purple?style=for-the-badge&logo=google) 
 ![Vite](https://img.shields.io/badge/Vite-5.4-yellow?style=for-the-badge&logo=vite)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
-
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css) 
+ 
 **Smart-ATS** is an enterprise-grade, full-stack recruitment and ATS optimization platform. It utilizes **Apache PDFBox** and **Google Gemini AI** to parse complex PDF resumes, sanitize contact icons, match technical skill matrices against job descriptions, calculate unified ATS scores, and empower HR recruiters with real-time analytics, applicant filtering, and automated SMTP email notifications.
 
 </div> 
