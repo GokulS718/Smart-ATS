@@ -149,7 +149,7 @@ export default function RecruiterDashboard({ isBackendOnline }) {
     };
 
     const SERVICE_ID = "service_zzsqe5n";
-    const TEMPLATE_ID = "template_0q3m35g"; // Replace with your exact Template ID if different
+    const TEMPLATE_ID = "template_jf49nht";
     const PUBLIC_KEY = "2i0TOt5R-apnvsBuJ";
 
     toast.loading(`Sending email to ${candidate.email}...`, { id: "email-toast" });
