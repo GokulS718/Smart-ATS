@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import emailjs from '@emailjs/browser';
 import { 
   Users, 
   Search, 
@@ -134,40 +135,34 @@ export default function RecruiterDashboard({ isBackendOnline }) {
     }
   };
 
-  // Trigger Notification Email API
-  const handleSendEmail = async (candidate) => {
-    const targetEmail = (candidate.email && candidate.email !== 'Not Found') ? candidate.email : 'gokulkavya37@gmail.com';
-    const toastId = toast.loading(`Sending email notification to ${candidate.candidateName || 'Candidate'} (${targetEmail})...`);
-    setSendingEmailId(candidate.id || candidate._id);
-
-    try {
-      if (isBackendOnline) {
-        const res = await fetch(`${API_BASE_URL}/api/notifications/send-email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            candidateName: candidate.candidateName || "Candidate",
-            email: targetEmail,
-            status: candidate.status || "Pending"
-          })
-        });
-
-        const resData = await res.json();
-        if (res.ok && resData.status === 'success') {
-          toast.success(resData.message || `Email sent to ${targetEmail}`, { id: toastId });
-        } else {
-          toast.error(resData.message || `Failed to send email to ${targetEmail}`, { id: toastId, duration: 5000 });
-      }
-    } else {
-      toast.success(`Notification email (${candidate.status || 'Updated'}) simulated for ${candidate.candidateName}`, { id: toastId });
+  // Trigger Notification Email via EmailJS
+  const handleSendEmail = (candidate) => {
+    if (!candidate.email || candidate.email === "Not Found") {
+      toast.error("Invalid candidate email address.");
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Error connecting to notification service", { id: toastId });
-  } finally {
-    setSendingEmailId(null);
-  }
-};
+
+    const templateParams = {
+      to_email: candidate.email,
+      candidate_name: candidate.candidateName || "Candidate",
+      status: candidate.status || "Pending Review"
+    };
+
+    const SERVICE_ID = "service_zzsqe5n";
+    const TEMPLATE_ID = "template_0q3m35g"; // Replace with your exact Template ID if different
+    const PUBLIC_KEY = "2i0TOt5R-apnvsBuJ";
+
+    toast.loading(`Sending email to ${candidate.email}...`, { id: "email-toast" });
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+      .then((result) => {
+        toast.success(`Email notification sent to ${candidate.email}!`, { id: "email-toast" });
+      })
+      .catch((error) => {
+        console.error("EmailJS Error:", error);
+        toast.error(`Failed to send email: ${error.text || "Check EmailJS credentials"}`, { id: "email-toast" });
+      });
+  };
 
 // Delete Candidate API
 const handleDeleteCandidate = async (candidateId) => {
