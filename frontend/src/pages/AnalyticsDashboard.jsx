@@ -23,7 +23,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://smart-ats-backend.onrender.com";
+import { API_BASE_URL } from '../config/api';
 
 const MOCK_ANALYTICS_CANDIDATES = [
   { candidateName: "Priya Sharma", email: "priya@example.com", score: 95, skills: ["Java", "Spring Boot", "React", "MongoDB", "Kafka"], status: "Accepted" },
