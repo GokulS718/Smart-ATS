@@ -144,7 +144,7 @@ export default function RecruiterDashboard({ isBackendOnline }) {
 
     const templateParams = {
       to_email: candidate.email,
-      candidate_name: candidate.candidateName || "Candidate",
+      candidate_name: (candidate.candidateName || "Candidate").replace(/\s+/g, ' ').trim(),
       status: candidate.status || "Pending Review"
     };
 
