@@ -156,7 +156,7 @@ Frontend will be active at: `http://localhost:5173`
 
 ---
 
-## ☁️ Deployment Guide
+##  Deployment Guide
 
 ### Backend on Render (Docker Web Service)
 1. Set **Root Directory**: `backend/demo`
