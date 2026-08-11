@@ -8,7 +8,7 @@
   
 --- 
  
-## ✨ Key Features
+##  Key Features
 
 ### 1. 🤖 AI-Powered Resume Analysis & Scoring 
 - **Dual Extraction Pipeline**: Combines deterministic Regex text parsing via Apache PDFBox with Google Gemini 1.5 Flash fallback.
