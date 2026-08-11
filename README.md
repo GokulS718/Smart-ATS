@@ -29,7 +29,7 @@
   - **Data Science (DS)**: Python, Pandas, NumPy, Data Modeling, Predictive Analytics 
   - **Data Analytics**: SQL, Power BI, Excel, Data Visualization, Python
 
-### 4. 👥 HR Recruiter Hub
+### 4.  HR Recruiter Hub
 - **Dynamic Numeric Threshold Filter**: Smooth score slider with `parseFloat` filtering that updates candidate rows in real time.
 - **Status Management**: Instant toggles for `Accepted`, `Rejected`, and `Pending Review`.
 - **Candidate Deletion**: One-click deletion (`DELETE /api/resumes/{id}`) from MongoDB with instant state sync and toast alerts.
