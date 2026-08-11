@@ -20,7 +20,7 @@
 - Upload and analyze **up to 7 PDF resumes simultaneously** via drag-and-drop or multi-file picker. 
 - Live progress indicators with an automated **Batch Evaluation Leaderboard** ranking candidates by match percentage. 
 
-### 3. 🎯 Job Description Preset Combobox
+### 3.  Job Description Preset Combobox
 - Pre-configured, high-demand industry job presets for instant evaluation:
   - **Cloud Computing**: AWS, GCP, Docker, Kubernetes, Terraform, Microservices
   - **Full Stack Web Development (FSWD)**: React, Node.js, Spring Boot, MongoDB, REST APIs
