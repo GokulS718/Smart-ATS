@@ -12,7 +12,7 @@
 
 ### 1.  AI-Powered Resume Analysis & Scoring 
 - **Dual Extraction Pipeline**: Combines deterministic Regex text parsing via Apache PDFBox with Google Gemini 1.5 Flash fallback.
-- **Accurate Contact Extraction**: Strips Unicode contact icons (  and handles concatenated LinkedIn URL fragments (e.g., `user@gmailin/user/` $\rightarrow$ `user@gmail.com`).
+- **Accurate Contact Extraction**: Strips Unicode contact icons   and handles concatenated LinkedIn URL fragments (e.g., `user@gmailin/user/` $\rightarrow$ `user@gmail.com`).
 - **Indian & Global Phone Support**: Automatically normalizes 10-digit Indian numbers (`+91 75982 02292` $\rightarrow$ `7598202292`) and international formats.
 - **Synchronized Scoring**: Ensures the exact ATS match score generated in Candidate Analysis is persisted to MongoDB and displayed identically in the HR Recruiter Hub.
 
