@@ -43,7 +43,7 @@
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+##  Architecture & Tech Stack
 
 ```
 Smart-ATS/
