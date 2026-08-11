@@ -2,7 +2,6 @@
 
 <div align="center">
 
-![Smart ATS Banner](https://img.shields.io/badge/Smart--ATS-v2.0-blue?style=for-the-badge&logo=rocket)
 
   
 **Smart-ATS** is an enterprise-grade, full-stack recruitment and ATS optimization platform. It utilizes **Apache PDFBox** and **Google Gemini AI** to parse complex PDF resumes, sanitize contact icons, match technical skill matrices against job descriptions, calculate unified ATS scores, and empower HR recruiters with real-time analytics, applicant filtering, and automated SMTP email notifications.
