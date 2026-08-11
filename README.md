@@ -80,7 +80,7 @@ Smart-ATS/
 
 ---
 
-## ⚡ Getting Started Locally
+##  Getting Started Locally
 
 ### Prerequisites
 - **JDK 21** or later installed
