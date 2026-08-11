@@ -143,7 +143,7 @@ Frontend will be active at: `http://localhost:5173`
 
 ---
 
-## 📡 REST API Reference
+##  REST API Reference
 
 | Method | Endpoint | Description |
 |---|---|---|
