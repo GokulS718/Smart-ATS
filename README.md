@@ -1,4 +1,4 @@
-# 🚀 Smart-ATS — AI-Powered Applicant Tracking & Resume Match Engine 
+# Smart-ATS — AI-Powered Applicant Tracking & Resume Match Engine 
 
 <div align="center">
 
